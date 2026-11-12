@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>oyo foto</title>
+<meta name="description" content="oyo foto – un regard sur le quotidien. Book photo de Juliette.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400..600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF1CF;
+    --ink: #2433A8;
+    --soft: #2433A8B3;
+    --tagbg: #FFFFFFA6;
+    --card: #FFFFFF;
+    --chip: #FFFFFF66;
+    --red: #E8412B;
+    --on-red: #FFFFFF;
+    --font: "Sora", "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #19224A; --ink: #FFE98F; --soft: #FFE98FB3; --tagbg: #FFE98F26; --card: #2C1731; --chip: #FFFFFF14; --red: #FF6A55; --on-red: #19224A;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; background: var(--paper); }
+  body { background: var(--paper); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+
+  header { padding: clamp(26px, 4vw, 52px) clamp(20px, 4vw, 56px) 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .logo { font-size: clamp(40px, 6vw, 60px); font-weight: 600; line-height: 1; letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
+  .logo .foto { font-weight: 400; }
+  .logo .o { position: relative; display: inline-block; letter-spacing: 0; }
+  .logo .pupil { position: absolute; left: 50%; top: 0; width: .12em; height: .12em; border-radius: 50%; background: currentColor;
+    transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))); }
+  .logo .pupil { transition: transform .12s ease-out; }
+  .sub { margin-top: 10px; color: var(--soft); font-size: clamp(15px, 1.6vw, 18px); font-weight: 500; line-height: 1.3; }
+
+  /* Tags */
+  nav.filters { padding: clamp(36px, 5vw, 64px) clamp(20px, 4vw, 56px) 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tags .break { flex-basis: 100%; height: 0; }
+  .tag {
+    font: inherit; font-size: 16px; font-weight: 500; line-height: 1;
+    color: var(--ink); background: var(--chip);
+    border: 2px solid var(--ink); border-radius: 999px;
+    padding: 9px 16px 10px; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s, transform .15s;
+  }
+  .tag:hover { background: var(--ink); color: var(--paper); }
+  .tag[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: var(--on-red); }
+  .tag:active { transform: scale(.95); }
+  .tag:disabled { opacity: .32; border-style: dashed; cursor: default; background: none; color: var(--ink); transform: none; }
+  .status { margin-top: 16px; display: flex; gap: 14px; align-items: baseline; color: var(--soft); font-size: 16px; font-weight: 500; min-height: 24px; }
+  #clear { font: inherit; background: none; border: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  #clear:hover { color: var(--red); }
+  #clear[hidden] { display: none; }
+  #order { font: inherit; background: none; border: 0; color: var(--soft); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin-left: auto; }
+  #order:hover { color: var(--red); }
+  #want { margin-top: 14px; }
+  .status { flex-wrap: wrap; }
+
+  /* Photos */
+  main {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: clamp(56px, 9vw, 130px) clamp(18px, 3vw, 44px);
+    padding: clamp(20px, 3vw, 40px) clamp(20px, 4vw, 56px) clamp(60px, 9vw, 140px);
+    align-items: start;
+  }
+  figure { grid-column: span 12; cursor: zoom-in; transition: opacity .35s ease; }
+  figure[hidden] { display: none; }
+  figure.fade { opacity: 0; }
+  .cta { font: inherit; font-size: 16px; font-weight: 500; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
+  .cta:hover { color: var(--red); }
+  .shop { padding: clamp(28px, 4vw, 56px) clamp(20px, 4vw, 56px) clamp(44px, 6vw, 80px); max-width: 560px; }
+  .shop h2 { font-size: clamp(26px, 3.2vw, 36px); font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+  .shop p { margin-top: 10px; color: var(--soft); font-weight: 500; line-height: 1.4; }
+  .shop ul { list-style: none; margin: 20px 0 24px; display: grid; gap: 10px; }
+  .shop li { display: flex; justify-content: space-between; gap: 20px; border: 2px solid var(--ink); border-radius: 999px; padding: 12px 20px; font-weight: 500; }
+  .shop li b { font-weight: 600; }
+  figcaption { margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--soft); font-variant-numeric: tabular-nums; }
+  figure img { display: block; width: 100%; height: auto; border-radius: 3px; background: #00000010; }
+  figure.size-m, figure.size-s { grid-column: span 6; }
+  figure.land { grid-column: span 12; }
+
+  @media (min-width: 760px) {
+    figure.size-l { grid-column: span 6; }
+    figure.size-m { grid-column: span 4; }
+    figure.size-s { grid-column: span 3; }
+    figure.land   { grid-column: span 8; }
+    figure.off-1 { margin-top: clamp(32px, 7vw, 110px); }
+    figure.off-2 { margin-top: clamp(14px, 2.6vw, 40px); }
+  }
+
+  footer {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+    padding: 0 clamp(20px, 4vw, 56px) calc(clamp(28px, 4vw, 48px) + 64px);
+    color: var(--soft); font-size: 16px; font-weight: 500;
+  }
+  footer a { color: inherit; text-underline-offset: 3px; }
+  footer a:hover { color: var(--red); }
+
+  /* Bouton rond pour remonter aux tags */
+  .fab {
+    position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 6;
+    font: inherit; font-size: 16px; font-weight: 600;
+    background: var(--ink); color: var(--paper); border: 0; border-radius: 999px;
+    padding: 12px 18px; cursor: pointer;
+    opacity: 0; pointer-events: none; transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+  }
+  .fab.on { opacity: 1; pointer-events: auto; transform: none; }
+
+  /* Visionneuse */
+  dialog { border: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; background: var(--paper); color: var(--ink); }
+  dialog::backdrop { background: var(--paper); }
+  .viewer { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 64px 20px 18px; }
+  .viewer img { max-width: 100%; max-height: calc(100vh - 250px); max-height: calc(100dvh - 250px); width: auto; height: auto; object-fit: contain; border-radius: 3px; }
+  .vnum { font-size: 14px; font-weight: 500; color: var(--soft); margin-bottom: -6px; }
+  .vtags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .vtags .tag { font-size: 15px; padding: 7px 14px 8px; }
+  .nav-btn {
+    position: absolute; font: inherit; font-size: 16px; font-weight: 600; color: var(--ink);
+    background: var(--chip); border: 2px solid var(--ink); border-radius: 999px; padding: 9px 16px; cursor: pointer;
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--paper); }
+  .close { top: 14px; right: 14px; }
+  .prev { left: 10px; top: 50%; transform: translateY(-50%); }
+  .next { right: 10px; top: 50%; transform: translateY(-50%); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    figure, .tag, .fab, .logo .pupil { transition: none; }
+  }
+
+
+  /* Tags plus petits, sans contour */
+  .tag { font-size: 14px; padding: 7px 13px 8px; border: 0; background: var(--tagbg); }
+  .tag:hover { background: var(--ink); color: var(--paper); }
+  .tag[aria-pressed="true"] { background: var(--red); color: var(--on-red); }
+  .tag:disabled { opacity: .35; background: var(--tagbg); }
+  .vtags .tag { font-size: 14px; padding: 6px 12px 7px; }
+  .shop li { border: 0; background: var(--tagbg); }
+</style>
+</head>
+<body>
+
+
+<header>
+  <div>
+  <h1 class="logo" id="logo" aria-label="oyo foto"><span class="o" aria-hidden="true">o<i class="pupil"></i></span><span aria-hidden="true">y</span><span class="o" aria-hidden="true">o<i class="pupil"></i></span><span class="foto" aria-hidden="true"> foto</span></h1>
+  <p class="sub">Un regard sur le quotidien</p>
+  </div>
+  <a class="cta" id="want" href="#tirages">J'en veux une</a>
+</header>
+
+<nav class="filters" id="filters" aria-label="Filtrer les photos par tags">
+  <div class="tags">
+    <button type="button" class="tag" data-tag="mer" aria-pressed="false">Bonne mer</button>
+    <button type="button" class="tag" data-tag="marseille" aria-pressed="false">Planète Mars</button>
+    <button type="button" class="tag" data-tag="gens" aria-pressed="false">Eux</button>
+    <button type="button" class="tag" data-tag="nature" aria-pressed="false">Dehors</button>
+    <button type="button" class="tag" data-tag="détails" aria-pressed="false">Détails</button>
+    <button type="button" class="tag" data-tag="mimines" aria-pressed="false">Les mimines</button>
+  </div>
+  <div class="status"><span id="count">65 photos</span><button type="button" id="clear" hidden>Effacer les tags</button><button type="button" id="order">Ordre : aléatoire</button></div>
+</nav>
+
+<!--
+  AJOUTER UNE PHOTO : copie un bloc <figure> ci-dessous, change le nom du fichier,
+  le texte alt, la taille et les tags dans data-tags (séparés par des virgules, sans espace).
+  Tailles : size-l (grande portrait), size-m (moyenne portrait), size-s (petite portrait),
+  land (photo en paysage).
+  AJOUTER UN TAG : ajoute un bouton <button class="tag" ...> dans la liste ci-dessus, avec le même
+  nom dans data-tag, puis utilise ce nom dans le data-tags des photos concernées.
+  Les tags se cumulent : une photo doit avoir TOUS les tags sélectionnés pour s'afficher.
+-->
+<main id="grid">
+  <figure class="size-m" data-tags="détails" data-mix="53" data-col="0" data-num="18">
+    <img src="images/banc-rouge.jpg" width="1000" height="1500" alt="Lattes d'un banc rouge sur l'asphalte" loading="lazy">
+    <figcaption>18</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails,nature" data-mix="37" data-col="1" data-num="22">
+    <img src="images/escargots.jpg" width="995" height="1500" alt="Escargots alignés sur un poteau de fil à linge, drap rouge à motifs" loading="lazy">
+    <figcaption>22</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,gens" data-mix="58" data-col="2" data-num="73">
+    <img src="images/deux-hommes-bateau.jpg" width="995" height="1500" alt="Deux hommes assis sur le pont d'un bateau, jeu de cartes et livre" loading="lazy">
+    <figcaption>73</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens,détails,mimines" data-mix="15" data-col="3" data-num="6">
+    <img src="images/cartes.jpg" width="995" height="1500" alt="Homme riant avec un jeu de cartes à motif écossais, lunettes de soleil sur le col" loading="lazy">
+    <figcaption>6</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="13" data-col="4" data-num="27">
+    <img src="images/enfant-cafe.jpg" width="995" height="1500" alt="Petite fille en pleurs derrière la vitre d'un café" loading="lazy">
+    <figcaption>27</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="nature,détails" data-mix="29" data-col="5" data-num="3">
+    <img src="images/seche-linge.jpg" width="1000" height="1500" alt="Étendoir à linge devant une grande vallée de montagnes dans les nuages" loading="lazy">
+    <figcaption>3</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens,détails,mimines" data-mix="31" data-col="6" data-num="90">
+    <img src="images/mains-scrabble.jpg" width="995" height="1500" alt="Mains d'une femme âgée posant des lettres de Scrabble sur une table en bois" loading="lazy">
+    <figcaption>90</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,gens" data-mix="25" data-col="7" data-num="66">
+    <img src="images/bandana.jpg" width="1500" height="995" alt="Nuque et épaule d'un homme au bandana bleu, bord de mer" loading="lazy">
+    <figcaption>66</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="détails" data-mix="24" data-col="8" data-num="78">
+    <img src="images/scrabble.jpg" width="995" height="1500" alt="Partie de Scrabble sur une table, oliveraie en arrière-plan" loading="lazy">
+    <figcaption>78</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="19" data-col="9" data-num="28">
+    <img src="images/salon-bois.jpg" width="1000" height="1500" alt="Jambes en jean croisées dans un salon en lattes de bois, table en verre" loading="lazy">
+    <figcaption>28</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="nature,mer" data-mix="32" data-col="10" data-num="97">
+    <img src="images/chevaux.jpg" width="995" height="1500" alt="Chevaux roux dans un pré face à la mer" loading="lazy">
+    <figcaption>97</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="" data-mix="26" data-col="11" data-num="56">
+    <img src="images/bancs-bleus.jpg" width="995" height="1500" alt="Rangées de bancs bleus à coussins rouges, lumière et ombres au sol" loading="lazy">
+    <figcaption>56</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="" data-mix="2" data-col="12" data-num="19">
+    <img src="images/bibliotheque.jpg" width="995" height="1500" alt="Grande voûte de bois courbe au-dessus d'une place pavée" loading="lazy">
+    <figcaption>19</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="gens,nature" data-mix="0" data-col="13" data-num="69">
+    <img src="images/plage-lac.jpg" width="995" height="1500" alt="Foule étendue sur l'herbe au bord d'un lac, sous les pins" loading="lazy">
+    <figcaption>69</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="détails,nature" data-mix="4" data-col="14" data-num="52">
+    <img src="images/ruches.jpg" width="1000" height="1500" alt="Cadres de ruche vus de côté, rayons de cire entre les lattes de bois" loading="lazy">
+    <figcaption>52</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,marseille,gens" data-mix="56" data-col="15" data-num="77">
+    <img src="images/survetement.jpg" width="1020" height="1500" alt="Homme en survêtement bleu clair enfilant sa veste devant un grillage de plage" loading="lazy">
+    <figcaption>77</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="nature,détails" data-mix="60" data-col="16" data-num="47">
+    <img src="images/olives.jpg" width="999" height="1500" alt="Cagette jaune pleine d'olives vertes sous un olivier" loading="lazy">
+    <figcaption>47</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,nature" data-mix="38" data-col="17" data-num="30">
+    <img src="images/crique.jpg" width="995" height="1500" alt="Crique de sable entre falaises, quelques personnes sur la plage" loading="lazy">
+    <figcaption>30</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens,détails" data-mix="49" data-col="18" data-num="9">
+    <img src="images/table-jaune.jpg" width="1000" height="1500" alt="Table en plastique jaune, bouteilles et cartes, deux silhouettes floues derrière" loading="lazy">
+    <figcaption>9</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="gens,nature,mimines" data-mix="10" data-col="19" data-num="87">
+    <img src="images/apiculteur.jpg" width="939" height="1500" alt="Homme âgé de dos, une main derrière le dos, apiculteur en combinaison au fond" loading="lazy">
+    <figcaption>87</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails,gens,mimines" data-mix="28" data-col="20" data-num="93">
+    <img src="images/nouilles.jpg" width="1000" height="1500" alt="Main piquant des nouilles avec une fourchette bleue dans une casserole, sur l'herbe" loading="lazy">
+    <figcaption>93</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="nature" data-mix="16" data-col="21" data-num="79">
+    <img src="images/van-montagne.jpg" width="1000" height="1500" alt="Route qui mène à un chalet et un van blanc, grandes montagnes sous les nuages" loading="lazy">
+    <figcaption>79</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="gens" data-mix="46" data-col="22" data-num="75">
+    <img src="images/piscine-chaise.jpg" width="1200" height="1500" alt="Femme assise sur une chaise en plastique au bord d'une piscine, vue du dessus" loading="lazy">
+    <figcaption>75</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="mer,marseille,gens,nature" data-mix="35" data-col="23" data-num="86">
+    <img src="images/pecheur.jpg" width="993" height="1500" alt="Pêcheur sur un rocher au bord d'une eau turquoise, immeubles couverts de graffitis" loading="lazy">
+    <figcaption>86</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="détails" data-mix="51" data-col="24" data-num="1">
+    <img src="images/bouee.jpg" width="1500" height="1000" alt="Bouée de bébé jaune flottant dans une piscine turquoise" loading="lazy">
+    <figcaption>1</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="nature" data-mix="41" data-col="25" data-num="91">
+    <img src="images/dunes.jpg" width="1030" height="1500" alt="Dunes de sable et touffes d'herbe sèche sous un ciel bleu profond" loading="lazy">
+    <figcaption>91</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,marseille,gens" data-mix="40" data-col="26" data-num="16">
+    <img src="images/rambarde.jpg" width="1020" height="1500" alt="Deux hommes en maillot accoudés à une rambarde face à la mer, deux vélos garés" loading="lazy">
+    <figcaption>16</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="" data-mix="21" data-col="27" data-num="71">
+    <img src="images/statue.jpg" width="1500" height="995" alt="Statue d'un homme au poing levé, un pigeon posé sur sa tête, grand ciel bleu" loading="lazy">
+    <figcaption>71</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,gens" data-mix="63" data-col="28" data-num="62">
+    <img src="images/homme-casquette-2.jpg" width="1500" height="1000" alt="Homme à casquette assis de dos face à la mer, variante plus serrée" loading="lazy">
+    <figcaption>62</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,gens,détails,marseille" data-mix="6" data-col="29" data-num="34">
+    <img src="images/jambes-bateau.jpg" width="995" height="1500" alt="Jambes croisées sur le bord d'un bateau, tatouage de botte et bracelet turquoise" loading="lazy">
+    <figcaption>34</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails,mimines" data-mix="48" data-col="30" data-num="92">
+    <img src="images/maquillage.jpg" width="995" height="1500" alt="Trousses et maquillage éparpillés sur une couverture bleue" loading="lazy">
+    <figcaption>92</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer,nature" data-mix="9" data-col="31" data-num="80">
+    <img src="images/falaise.jpg" width="995" height="1500" alt="Côte rocheuse blanche vue de haut, mer d'un bleu profond" loading="lazy">
+    <figcaption>80</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="nature" data-mix="7" data-col="32" data-num="15">
+    <img src="images/lac-cabanes.jpg" width="1125" height="1500" alt="Cabanes rouges au bord d'un lac, reflets des pins dans l'eau calme" loading="lazy">
+    <figcaption>15</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails,mer" data-mix="54" data-col="33" data-num="76">
+    <img src="images/tissu-raye.jpg" width="1000" height="1500" alt="Tissu rayé turquoise sur une barque, bâche bleue au fond" loading="lazy">
+    <figcaption>76</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer" data-mix="8" data-col="34" data-num="32">
+    <img src="images/tapis-mer.jpg" width="995" height="1500" alt="Tapis bleus alignés sur une terrasse face à la mer, un banc au fond" loading="lazy">
+    <figcaption>32</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="34" data-col="35" data-num="4">
+    <img src="images/station-service.jpg" width="1000" height="1500" alt="Homme en chemise rouge buvant à sa gourde à une pompe à essence" loading="lazy">
+    <figcaption>4</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="nature" data-mix="59" data-col="36" data-num="39">
+    <img src="images/grotte-lac.jpg" width="995" height="1500" alt="Vue sur un lac et une montagne depuis l'intérieur d'une grotte" loading="lazy">
+    <figcaption>39</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer" data-mix="44" data-col="37" data-num="40">
+    <img src="images/salle-mer.jpg" width="1000" height="1500" alt="Table dressée devant une grande fenêtre ouverte sur la mer" loading="lazy">
+    <figcaption>40</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer,nature" data-mix="33" data-col="38" data-num="43">
+    <img src="images/phare.jpg" width="995" height="1500" alt="Petite bâtisse au sommet d'une colline face à la mer, ciel rose au crépuscule" loading="lazy">
+    <figcaption>43</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,marseille,gens" data-mix="61" data-col="39" data-num="12">
+    <img src="images/quai.jpg" width="1500" height="1000" alt="Quatre personnes pique-niquent sur un bout de quai au-dessus d'une eau sombre et claire" loading="lazy">
+    <figcaption>12</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="nature" data-mix="22" data-col="40" data-num="14">
+    <img src="images/village-bois.jpg" width="1000" height="1500" alt="Chemin de gravier entre des granges en bois, jardinière de fleurs roses" loading="lazy">
+    <figcaption>14</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="gens,détails,mer" data-mix="36" data-col="41" data-num="63">
+    <img src="images/nuque.jpg" width="1500" height="1000" alt="Nuque d'un homme avec une boucle d'oreille, mer floue derrière" loading="lazy">
+    <figcaption>63</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="62" data-col="42" data-num="83">
+    <img src="images/dessinateur.jpg" width="995" height="1500" alt="Homme assis sur un muret, dessinant, sous les arbres d'un parc" loading="lazy">
+    <figcaption>83</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="détails" data-mix="57" data-col="43" data-num="13">
+    <img src="images/pese-personne.jpg" width="1000" height="1500" alt="Pèse-personne sur un carrelage bleu devant une fenêtre à rideaux blancs" loading="lazy">
+    <figcaption>13</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="11" data-col="44" data-num="94">
+    <img src="images/skate.jpg" width="1000" height="1500" alt="Skateur en t-shirt rouge qui saute le long d'un mur, café vitré au-dessus" loading="lazy">
+    <figcaption>94</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer,détails" data-mix="45" data-col="45" data-num="36">
+    <img src="images/voiles.jpg" width="1000" height="1500" alt="Voiles repliées et cordages sur le pont d'un bateau" loading="lazy">
+    <figcaption>36</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="détails" data-mix="42" data-col="46" data-num="84">
+    <img src="images/poireaux.jpg" width="1000" height="1500" alt="Poireaux et pamplemousse dans un panier, sur une nappe à carreaux" loading="lazy">
+    <figcaption>84</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="gens" data-mix="39" data-col="47" data-num="29">
+    <img src="images/terrasse.jpg" width="1000" height="1500" alt="Homme âgé lisant la carte à une table de terrasse devant une façade en brique" loading="lazy">
+    <figcaption>29</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="gens" data-mix="27" data-col="48" data-num="17">
+    <img src="images/manifestation.jpg" width="1000" height="1500" alt="Manifestante tenant une pancarte en carton levée, fumée bleue dans une rue arborée" loading="lazy">
+    <figcaption>17</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="gens,mimines,nature" data-mix="5" data-col="49" data-num="44">
+    <img src="images/doigts.jpg" width="1005" height="1500" alt="Femme les yeux fermés qui lèche la crème sur ses doigts, un sandwich dans l'autre main, rochers derrière" loading="lazy">
+    <figcaption>44</figcaption>
+  </figure>
+
+  <figure class="size-l" data-tags="mer,marseille,nature" data-mix="64" data-col="50" data-num="53">
+    <img src="images/falaises.jpg" width="1000" height="1500" alt="Falaises blanches plongeant dans une mer sombre, ciel strié" loading="lazy">
+    <figcaption>53</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails" data-mix="50" data-col="51" data-num="67">
+    <img src="images/mots-fleches.jpg" width="1000" height="1500" alt="Cahier de mots fléchés sur le rebord d'une fenêtre de ferry" loading="lazy">
+    <figcaption>67</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails,gens,mimines" data-mix="55" data-col="52" data-num="41">
+    <img src="images/des.jpg" width="1008" height="1500" alt="Main lançant des dés sur une couverture bleue" loading="lazy">
+    <figcaption>41</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="détails" data-mix="14" data-col="53" data-num="58">
+    <img src="images/couteau.jpg" width="995" height="1500" alt="Couteau posé sur un pont en teck, entouré de taches de sang" loading="lazy">
+    <figcaption>58</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="" data-mix="30" data-col="54" data-num="49">
+    <img src="images/bancs-bleus-2.jpg" width="1000" height="1500" alt="Bancs bleus à coussins roses devant un mur de roche brute" loading="lazy">
+    <figcaption>49</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,marseille,gens,nature" data-mix="23" data-col="55" data-num="26">
+    <img src="images/vue-ville.jpg" width="1500" height="1000" alt="Vue sur une ville et sa baie derrière un grillage vert, un garçon assis, flou" loading="lazy">
+    <figcaption>26</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="détails,gens,mimines" data-mix="3" data-col="56" data-num="5">
+    <img src="images/mots-fleches-ferry.jpg" width="995" height="1500" alt="Mains cochant une grille de mots fléchés au stylo rouge, pont de ferry bleu flou" loading="lazy">
+    <figcaption>5</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,gens" data-mix="18" data-col="57" data-num="72">
+    <img src="images/homme-casquette.jpg" width="1500" height="995" alt="Homme à casquette assis de dos face à la mer, derrière un muret" loading="lazy">
+    <figcaption>72</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,marseille,gens,nature" data-mix="17" data-col="58" data-num="61">
+    <img src="images/rochers.jpg" width="1000" height="1500" alt="Baigneurs sur des rochers sous une terrasse blanche en béton, bonnet de bain rose dans l'eau" loading="lazy">
+    <figcaption>61</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer,gens,marseille" data-mix="20" data-col="59" data-num="31">
+    <img src="images/nageurs.jpg" width="995" height="1500" alt="Deux hommes nagent en mer, l'un éclate de rire" loading="lazy">
+    <figcaption>31</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="gens,mimines" data-mix="1" data-col="60" data-num="57">
+    <img src="images/revolution.jpg" width="1500" height="1000" alt="Des personnes collent une affiche « Revolution » sur un mur" loading="lazy">
+    <figcaption>57</figcaption>
+  </figure>
+
+  <figure class="land" data-tags="mer,gens" data-mix="12" data-col="61" data-num="65">
+    <img src="images/ponton.jpg" width="1500" height="1000" alt="Baigneurs sur des rochers roses et un ponton, îles à l'horizon" loading="lazy">
+    <figcaption>65</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,marseille,gens" data-mix="52" data-col="62" data-num="48">
+    <img src="images/slip-rouge.jpg" width="1002" height="1500" alt="Homme en slip de bain rouge, mains sur les hanches, devant un grand immeuble blanc" loading="lazy">
+    <figcaption>48</figcaption>
+  </figure>
+
+  <figure class="size-m" data-tags="mer,marseille,gens,nature" data-mix="47" data-col="63" data-num="59">
+    <img src="images/plongeon.jpg" width="1000" height="1500" alt="Deux hommes sur un rocher au crépuscule, l'un se penche pour plonger" loading="lazy">
+    <figcaption>59</figcaption>
+  </figure>
+
+  <figure class="size-s" data-tags="mer" data-mix="43" data-col="64" data-num="60">
+    <img src="images/port.jpg" width="1000" height="1500" alt="Bateaux de pêche amarrés dans un port, ciel brumeux" loading="lazy">
+    <figcaption>60</figcaption>
+  </figure>
+
+</main>
+
+<section class="shop" id="tirages">
+  <h2>J'en veux une</h2>
+  <p>Une photo te plaît ? Écris-moi avec son numéro.</p>
+  <ul>
+    <li><span>40 × 30 cm</span><b>49 €</b></li>
+    <li><span>21 × 30 cm</span><b>35 €</b></li>
+  </ul>
+  <a class="cta" data-contact data-prefix="Écrire à "></a>
+</section>
+
+<footer>
+  <span>© <span id="year"></span> oyo foto</span>
+  <a data-contact></a>
+</footer>
+
+<button type="button" class="fab" id="fab" aria-label="Revenir aux tags">Tags</button>
+
+<dialog id="viewer" aria-label="Photo en grand">
+  <div class="viewer">
+    <button class="nav-btn close" type="button" aria-label="Fermer">Fermer</button>
+    <button class="nav-btn prev" type="button" aria-label="Photo précédente">Préc.</button>
+    <img id="viewer-img" alt="">
+    <button class="nav-btn next" type="button" aria-label="Photo suivante">Suiv.</button>
+    <div class="vnum" id="vnum"></div>
+    <div class="vtags" id="vtags"></div>
+    <a class="cta" id="vwant">J'en veux une</a>
+  </div>
+</dialog>
+
+<script>
+  // Ton contact : à changer ici, une seule fois (il s'affiche partout dans la page)
+  const CONTACT = 'juliette.poyet.revol@gmail.com';
+  document.querySelectorAll('[data-contact]').forEach(a => {
+    a.href = 'mailto:' + CONTACT;
+    a.textContent = (a.dataset.prefix || '') + CONTACT;
+  });
+
+  const figures = [...document.querySelectorAll('#grid figure')];
+  const tagButtons = [...document.querySelectorAll('#filters .tag')];
+  const labels = Object.fromEntries(tagButtons.map(b => [b.dataset.tag, b.textContent]));
+  const countEl = document.getElementById('count');
+  const clearBtn = document.getElementById('clear');
+  const fab = document.getElementById('fab');
+  const selected = new Set();
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const tagsOf = f => f.dataset.tags.split(',').map(t => t.trim());
+
+  // « oyo » : de petites pupilles dans les deux « o », qui suivent le doigt ou la souris
+  const logo = document.getElementById('logo');
+  const pupils = [...logo.querySelectorAll('.pupil')];
+  const cvs = document.createElement('canvas').getContext('2d');
+  let eyeH = 20;
+  function placePupils() {
+    const cs = getComputedStyle(logo);
+    cvs.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const fs = parseFloat(cs.fontSize);
+    const m = cvs.measureText('o');
+    const A = m.fontBoundingBoxAscent ?? fs * .8, D = m.fontBoundingBoxDescent ?? fs * .2;
+    const asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent;
+    const baseline = (fs - (A + D)) / 2 + A;   // du haut de la ligne à la ligne de base
+    eyeH = asc + desc;
+    pupils.forEach(p => {
+      p.style.top = (baseline - (asc - desc) / 2) + 'px';
+      p.style.width = p.style.height = (eyeH * .16) + 'px';
+    });
+  }
+  window.placePupils = placePupils;
+  placePupils();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placePupils);
+  addEventListener('resize', placePupils);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    addEventListener('pointermove', ev => {
+      pupils.forEach(p => {
+        const r = p.parentElement.getBoundingClientRect();
+        const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+        const k = Math.min(1, Math.hypot(dx, dy) / 200), a = Math.atan2(dy, dx);
+        p.style.setProperty('--px', (Math.cos(a) * eyeH * .12 * k) + 'px');
+        p.style.setProperty('--py', (Math.sin(a) * eyeH * .12 * k) + 'px');
+      });
+    }, { passive: true });
+  }
+
+  const grid = document.getElementById('grid');
+  const ordered = () => [...grid.querySelectorAll('figure')];
+
+  // Mise en page « magazine » : chaque photo prend une largeur et une position au hasard sur 12 colonnes
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  function spanFor(f, wide) {
+    if (f.classList.contains('land')) return wide ? pick([6, 7, 8, 9]) : pick([10, 12]);
+    if (f.classList.contains('size-l')) return wide ? pick([5, 6]) : pick([8, 9]);
+    if (f.classList.contains('size-m')) return wide ? pick([4, 5]) : pick([7, 8]);
+    return wide ? pick([3, 4]) : pick([5, 6]);
+  }
+  function layout() {
+    const wide = matchMedia('(min-width: 760px)').matches;
+    const vis = ordered().filter(f => !f.hidden);
+    let i = 0;
+    while (i < vis.length) {
+      const row = []; let sum = 0;
+      while (i < vis.length && row.length < (wide ? 3 : 2)) {
+        const sp = spanFor(vis[i], wide);
+        if (row.length && sum + sp > 12) break;
+        row.push([vis[i], sp]); sum += sp; i++;
+        if (Math.random() < 0.3) break;
+      }
+      const gaps = new Array(row.length + 1).fill(0);
+      for (let free = 12 - sum; free > 0; free--) gaps[Math.floor(Math.random() * gaps.length)]++;
+      let col = 1;
+      row.forEach(([f, sp], k) => {
+        col += gaps[k];
+        f.style.gridColumn = col + ' / span ' + sp;
+        col += sp;
+        f.style.alignSelf = pick(['start', 'center', 'end']);
+        f.style.marginTop = Math.round(Math.random() * (wide ? 90 : 30)) + 'px';
+      });
+    }
+  }
+  matchMedia('(min-width: 760px)').addEventListener('change', () => layout());
+
+  function updateUI() {
+    const visible = figures.filter(f => !f.hidden);
+    tagButtons.forEach(b => {
+      const t = b.dataset.tag, on = selected.has(t);
+      b.setAttribute('aria-pressed', String(on));
+      // grise les tags qui ne donneraient aucune photo en plus de la sélection actuelle
+      b.disabled = !on && !visible.some(f => tagsOf(f).includes(t));
+    });
+    countEl.textContent = visible.length + (visible.length > 1 ? ' photos' : ' photo');
+    clearBtn.hidden = selected.size === 0;
+    fab.textContent = selected.size ? 'Tags (' + selected.size + ')' : 'Tags';
+  }
+
+  function applyFilters() {
+    figures.forEach(f => f.classList.add('fade'));
+    setTimeout(() => {
+      figures.forEach(f => {
+        const tags = tagsOf(f);
+        f.hidden = ![...selected].every(t => tags.includes(t));
+      });
+      layout();
+      updateUI();
+      requestAnimationFrame(() => figures.forEach(f => f.classList.remove('fade')));
+    }, 180);
+  }
+
+  function toggle(tag) {
+    selected.has(tag) ? selected.delete(tag) : selected.add(tag);
+    applyFilters();
+  }
+  tagButtons.forEach(b => b.addEventListener('click', () => toggle(b.dataset.tag)));
+  clearBtn.addEventListener('click', () => { selected.clear(); applyFilters(); });
+  layout(); updateUI();
+
+  // Ordre : aléatoire (différent à chaque visite) ou croissant par numéro, au choix
+  const orderBtn = document.getElementById('order');
+  let ascending = false;
+  function reorder() {
+    const list = ordered();
+    if (ascending) list.sort((a, b) => a.dataset.num - b.dataset.num);
+    else for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+    list.forEach(f => grid.appendChild(f));
+    orderBtn.textContent = ascending ? 'Ordre : croissant' : 'Ordre : aléatoire';
+    layout();
+  }
+  orderBtn.addEventListener('click', () => { ascending = !ascending; reorder(); });
+  reorder();
+
+  // Bouton « Tags » : visible quand la liste des tags n'est plus à l'écran
+  const filtersEl = document.getElementById('filters');
+  new IntersectionObserver(([e]) => fab.classList.toggle('on', !e.isIntersecting)).observe(filtersEl);
+  fab.addEventListener('click', () => filtersEl.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+
+  // Visionneuse plein écran, avec les tags de la photo (cliquables)
+  const dlg = document.getElementById('viewer');
+  const big = document.getElementById('viewer-img');
+  const vtags = document.getElementById('vtags');
+  let current = 0;
+  const visibleFigs = () => ordered().filter(f => !f.hidden);
+
+  function show(i) {
+    const list = visibleFigs();
+    current = (i + list.length) % list.length;
+    const fig = list[current];
+    const img = fig.querySelector('img');
+    big.src = img.src; big.alt = img.alt;
+    document.getElementById('vnum').textContent = fig.dataset.num;
+    const n = fig.dataset.num;
+    document.getElementById('vwant').href = 'mailto:' + CONTACT
+      + '?subject=' + encodeURIComponent('oyo foto – photo n° ' + n)
+      + '&body=' + encodeURIComponent('Bonjour, je voudrais un tirage de la photo n° ' + n + '.\nFormat : ');
+    vtags.replaceChildren(...tagsOf(fig).map(t => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tag';
+      b.textContent = labels[t] || t;
+      b.setAttribute('aria-pressed', String(selected.has(t)));
+      b.addEventListener('click', () => {
+        dlg.close();
+        if (!selected.has(t)) selected.add(t);
+        applyFilters();
+      });
+      return b;
+    }));
+  }
+  figures.forEach(f => f.addEventListener('click', () => {
+    show(visibleFigs().indexOf(f));
+    dlg.showModal();
+  }));
+  dlg.querySelector('.close').addEventListener('click', () => dlg.close());
+  dlg.querySelector('.prev').addEventListener('click', () => show(current - 1));
+  dlg.querySelector('.next').addEventListener('click', () => show(current + 1));
+  dlg.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+  });
+  dlg.addEventListener('click', e => { if (e.target === dlg || e.target.classList.contains('viewer')) dlg.close(); });
+</script>
+</body>
+</html>

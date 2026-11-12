@@ -121,19 +121,24 @@
   /* Visionneuse */
   dialog { border: 0; padding: 0; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; background: var(--paper); color: var(--ink); }
   dialog::backdrop { background: var(--paper); }
-  .viewer { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 64px 20px 18px; }
-  .viewer img { max-width: 100%; max-height: calc(100vh - 250px); max-height: calc(100dvh - 250px); width: auto; height: auto; object-fit: contain; border-radius: 3px; }
-  .vnum { font-size: 14px; font-weight: 500; color: var(--soft); margin-bottom: -6px; }
-  .vtags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-bottom: env(safe-area-inset-bottom, 0px); }
-  .vtags .tag { font-size: 15px; padding: 7px 14px 8px; }
-  .nav-btn {
-    position: absolute; font: inherit; font-size: 16px; font-weight: 600; color: var(--ink);
-    background: var(--chip); border: 2px solid var(--ink); border-radius: 999px; padding: 9px 16px; cursor: pointer;
-  }
+  .viewer { position: relative; height: 100%; display: flex; flex-direction: column; }
+  .stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; padding: 64px 16px 8px; touch-action: pan-y; }
+  .stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 3px; }
+  .info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 6px 16px 4px; }
+  .vnum { font-size: 14px; font-weight: 500; color: var(--soft); }
+  .vtags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .strip { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px calc(12px + env(safe-area-inset-bottom, 0px)); scrollbar-width: none; }
+  .strip::-webkit-scrollbar { display: none; }
+  .strip button { flex: none; width: 56px; height: 56px; padding: 0; border: 0; border-radius: 3px; overflow: hidden; cursor: pointer; opacity: .5; background: none; outline-offset: 2px; transition: opacity .15s; }
+  .strip button:hover { opacity: .85; }
+  .strip button[aria-current="true"] { opacity: 1; outline: 2px solid var(--ink); }
+  .strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .nav-btn { font: inherit; font-size: 16px; font-weight: 600; color: var(--ink); background: var(--chip); border: 2px solid var(--ink); border-radius: 999px; padding: 9px 16px; cursor: pointer; }
   .nav-btn:hover { background: var(--ink); color: var(--paper); }
-  .close { top: 14px; right: 14px; }
-  .prev { left: 10px; top: 50%; transform: translateY(-50%); }
-  .next { right: 10px; top: 50%; transform: translateY(-50%); }
+  .close { position: absolute; top: 14px; right: 14px; z-index: 2; }
+  .prev, .next { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; }
+  .prev { left: 10px; }
+  .next { right: 10px; }
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -148,6 +153,17 @@
   .tag:disabled { opacity: .35; background: var(--tagbg); }
   .vtags .tag { font-size: 14px; padding: 6px 12px 7px; }
   .shop li { border: 0; background: var(--tagbg); }
+
+  /* Bascule vrac / mosaïque */
+  #view { font: inherit; background: none; border: 0; color: var(--soft); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin-left: auto; }
+  #view:hover { color: var(--red); }
+  #order { margin-left: 0; }
+  main.mosaic { grid-template-columns: repeat(3, 1fr); gap: 3px; padding-top: 24px; }
+  main.mosaic figure { grid-column: auto !important; margin-top: 0 !important; align-self: stretch !important; }
+  main.mosaic figure img { aspect-ratio: 1 / 1; object-fit: cover; border-radius: 0; }
+  main.mosaic figcaption { display: none; }
+  @media (min-width: 760px) { main.mosaic { grid-template-columns: repeat(4, 1fr); } }
+  @media (min-width: 1100px) { main.mosaic { grid-template-columns: repeat(5, 1fr); } }
 </style>
 </head>
 <body>
@@ -170,17 +186,21 @@
     <button type="button" class="tag" data-tag="détails" aria-pressed="false">Détails</button>
     <button type="button" class="tag" data-tag="mimines" aria-pressed="false">Les mimines</button>
   </div>
-  <div class="status"><span id="count">65 photos</span><button type="button" id="clear" hidden>Effacer les tags</button><button type="button" id="order">Ordre : aléatoire</button></div>
+  <div class="status"><span id="count">65 photos</span><button type="button" id="clear" hidden>Effacer les tags</button><button type="button" id="view">Vue : vrac</button><button type="button" id="order">Ordre : aléatoire</button></div>
 </nav>
 
 <!--
-  AJOUTER UNE PHOTO : copie un bloc <figure> ci-dessous, change le nom du fichier,
-  le texte alt, la taille et les tags dans data-tags (séparés par des virgules, sans espace).
-  Tailles : size-l (grande portrait), size-m (moyenne portrait), size-s (petite portrait),
-  land (photo en paysage).
-  AJOUTER UN TAG : ajoute un bouton <button class="tag" ...> dans la liste ci-dessus, avec le même
-  nom dans data-tag, puis utilise ce nom dans le data-tags des photos concernées.
-  Les tags se cumulent : une photo doit avoir TOUS les tags sélectionnés pour s'afficher.
+  AJOUTER UNE PHOTO, en 3 étapes :
+  1. Dépose le fichier dans le dossier images/ (par exemple images/phare.jpg).
+  2. Copie un bloc <figure> ci-dessous et colle-le juste avant la balise de fin de main.
+  3. Change src, alt et data-tags (mer, marseille, gens, nature, détails, mimines, séparés par des virgules).
+  Le numéro, la légende et la taille sont ajoutés tout seuls. Pour fixer toi-même un numéro, ajoute data-num="52".
+  Exemple minimal :
+  <figure data-tags="mer,gens"><img src="images/phare.jpg" alt="Un phare au coucher du soleil" loading="lazy"></figure>
+
+  AJOUTER UN TAG : ajoute un bouton dans la liste des tags en haut (copie-en un), avec le même nom
+  dans data-tag, puis utilise ce nom dans le data-tags des photos concernées.
+  Les tags se cumulent : une photo doit avoir TOUS les tags choisis pour s'afficher.
 -->
 <main id="grid">
   <figure class="size-m" data-tags="détails" data-mix="53" data-col="0" data-num="18">
@@ -530,12 +550,17 @@
 <dialog id="viewer" aria-label="Photo en grand">
   <div class="viewer">
     <button class="nav-btn close" type="button" aria-label="Fermer">Fermer</button>
-    <button class="nav-btn prev" type="button" aria-label="Photo précédente">Préc.</button>
-    <img id="viewer-img" alt="">
-    <button class="nav-btn next" type="button" aria-label="Photo suivante">Suiv.</button>
-    <div class="vnum" id="vnum"></div>
-    <div class="vtags" id="vtags"></div>
-    <a class="cta" id="vwant">J'en veux une</a>
+    <div class="stage">
+      <button class="nav-btn prev" type="button" aria-label="Photo précédente">Préc.</button>
+      <img id="viewer-img" alt="">
+      <button class="nav-btn next" type="button" aria-label="Photo suivante">Suiv.</button>
+    </div>
+    <div class="info">
+      <span class="vnum" id="vnum"></span>
+      <div class="vtags" id="vtags"></div>
+      <a class="cta" id="vwant">J'en veux une</a>
+    </div>
+    <div class="strip" id="strip" aria-label="Autres photos"></div>
   </div>
 </dialog>
 
@@ -546,6 +571,31 @@
     a.href = 'mailto:' + CONTACT;
     a.textContent = (a.dataset.prefix || '') + CONTACT;
   });
+
+  // Photos ajoutées à la main : numéro, légende et taille sont ajoutés automatiquement s'ils manquent
+  (function prepare() {
+    const figs = [...document.querySelectorAll('#grid figure')];
+    const used = new Set(figs.map(f => +f.dataset.num).filter(Boolean));
+    figs.forEach(f => {
+      if (!f.dataset.num) {
+        let n, tries = 0;
+        do { n = 1 + Math.floor(Math.random() * 99); tries++; } while (used.has(n) && tries < 500);
+        used.add(n); f.dataset.num = n;
+      }
+      if (!f.querySelector('figcaption')) {
+        const c = document.createElement('figcaption'); c.textContent = f.dataset.num; f.appendChild(c);
+      }
+      if (!f.dataset.tags) f.dataset.tags = '';
+      if (!/\b(size-[sml]|land)\b/.test(f.className)) {
+        const img = f.querySelector('img');
+        const apply = () => {
+          f.classList.add(img.naturalWidth > img.naturalHeight ? 'land' : ['size-s', 'size-m', 'size-m', 'size-l'][Math.floor(Math.random() * 4)]);
+          setTimeout(() => layout(), 0);
+        };
+        if (img.complete && img.naturalWidth) apply(); else img.addEventListener('load', apply, { once: true });
+      }
+    });
+  })();
 
   const figures = [...document.querySelectorAll('#grid figure')];
   const tagButtons = [...document.querySelectorAll('#filters .tag')];
@@ -678,26 +728,45 @@
   orderBtn.addEventListener('click', () => { ascending = !ascending; reorder(); });
   reorder();
 
+  // Vue : « vrac » (mise en page libre) ou « mosaïque » serrée, façon Instagram
+  const viewBtn = document.getElementById('view');
+  let mosaic = false;
+  viewBtn.addEventListener('click', () => {
+    mosaic = !mosaic;
+    grid.classList.toggle('mosaic', mosaic);
+    viewBtn.textContent = mosaic ? 'Vue : mosaïque' : 'Vue : vrac';
+  });
+
   // Bouton « Tags » : visible quand la liste des tags n'est plus à l'écran
   const filtersEl = document.getElementById('filters');
   new IntersectionObserver(([e]) => fab.classList.toggle('on', !e.isIntersecting)).observe(filtersEl);
   fab.addEventListener('click', () => filtersEl.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
-  // Visionneuse plein écran, avec les tags de la photo (cliquables)
+  // Visionneuse : grande photo, tags cliquables, petit carrousel en bas, glisser du doigt
   const dlg = document.getElementById('viewer');
   const big = document.getElementById('viewer-img');
   const vtags = document.getElementById('vtags');
-  let current = 0;
+  const strip = document.getElementById('strip');
+  let current = 0, shown = [];
   const visibleFigs = () => ordered().filter(f => !f.hidden);
 
+  function buildStrip() {
+    strip.replaceChildren(...shown.map((f, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('aria-label', 'Photo n° ' + f.dataset.num);
+      const im = document.createElement('img');
+      im.src = f.querySelector('img').src; im.alt = ''; im.loading = 'lazy';
+      b.appendChild(im);
+      b.addEventListener('click', () => show(i));
+      return b;
+    }));
+  }
+
   function show(i) {
-    const list = visibleFigs();
-    current = (i + list.length) % list.length;
-    const fig = list[current];
-    const img = fig.querySelector('img');
+    current = (i + shown.length) % shown.length;
+    const fig = shown[current], img = fig.querySelector('img'), n = fig.dataset.num;
     big.src = img.src; big.alt = img.alt;
-    document.getElementById('vnum').textContent = fig.dataset.num;
-    const n = fig.dataset.num;
+    document.getElementById('vnum').textContent = 'n° ' + n;
     document.getElementById('vwant').href = 'mailto:' + CONTACT
       + '?subject=' + encodeURIComponent('oyo foto – photo n° ' + n)
       + '&body=' + encodeURIComponent('Bonjour, je voudrais un tirage de la photo n° ' + n + '.\nFormat : ');
@@ -713,9 +782,14 @@
       });
       return b;
     }));
+    [...strip.children].forEach((b, k) => b.setAttribute('aria-current', String(k === current)));
+    const cur = strip.children[current];
+    if (cur) strip.scrollTo({ left: cur.offsetLeft - strip.clientWidth / 2 + cur.clientWidth / 2, behavior: 'smooth' });
   }
   figures.forEach(f => f.addEventListener('click', () => {
-    show(visibleFigs().indexOf(f));
+    shown = visibleFigs();
+    buildStrip();
+    show(shown.indexOf(f));
     dlg.showModal();
   }));
   dlg.querySelector('.close').addEventListener('click', () => dlg.close());
@@ -725,7 +799,17 @@
     if (e.key === 'ArrowLeft') show(current - 1);
     if (e.key === 'ArrowRight') show(current + 1);
   });
-  dlg.addEventListener('click', e => { if (e.target === dlg || e.target.classList.contains('viewer')) dlg.close(); });
+  dlg.addEventListener('click', e => {
+    if (e.target === dlg || e.target.classList.contains('viewer') || e.target.classList.contains('stage')) dlg.close();
+  });
+  let sx = null;
+  const stage = dlg.querySelector('.stage');
+  stage.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
+  });
 </script>
 </body>
 </html>
